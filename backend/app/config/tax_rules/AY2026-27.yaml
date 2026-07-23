@@ -1,0 +1,69 @@
+# FY 2025-26 / AY 2026-27 tax rules.
+# NOTE: Verify against the current Finance Act before each filing season.
+# Amounts in INR. Slabs are [lower_inclusive, upper_exclusive, rate_pct];
+# upper: null means "and above".
+version: "AY2026-27.v1"
+assessment_year: 2026
+cess_rate_pct: 4.0
+
+regimes:
+  new:
+    standard_deduction: 75000
+    # Chapter VI-A deductions largely disallowed in the new regime.
+    # Only the employer NPS contribution (80CCD(2)) style allowances survive;
+    # kept configurable for auditability.
+    allowed_deductions: ["80CCD2", "std"]
+    slabs:
+      - [0, 400000, 0]
+      - [400000, 800000, 5]
+      - [800000, 1200000, 10]
+      - [1200000, 1600000, 15]
+      - [1600000, 2000000, 20]
+      - [2000000, 2400000, 25]
+      - [2400000, null, 30]
+    rebate_87a:
+      max_taxable_income: 1200000
+      max_rebate: 60000
+      # Marginal relief: tax payable capped so it never exceeds income over threshold.
+      marginal_relief: true
+    surcharge_bands:
+      - [5000000, 10000000, 10]
+      - [10000000, 20000000, 15]
+      - [20000000, null, 25]   # new regime top surcharge capped at 25%
+  old:
+    standard_deduction: 50000
+    allowed_deductions:
+      ["80C", "80CCD1B", "80CCD2", "80D", "80E", "80EEA", "24b", "hra_exempt", "std", "80G", "80TTA", "80TTB"]
+    deduction_caps:
+      "80C": 150000
+      "80CCD1B": 50000
+      "80D": 100000       # self+family+senior parents upper bound
+      "24b": 200000       # self-occupied home loan interest
+      "80TTA": 10000
+      "80TTB": 50000
+    slabs:
+      - [0, 250000, 0]
+      - [250000, 500000, 5]
+      - [500000, 1000000, 20]
+      - [1000000, null, 30]
+    rebate_87a:
+      max_taxable_income: 500000
+      max_rebate: 12500
+      marginal_relief: false
+    surcharge_bands:
+      - [5000000, 10000000, 10]
+      - [10000000, 20000000, 15]
+      - [20000000, 50000000, 25]
+      - [50000000, null, 37]
+
+# Capital gains taxed at special rates and EXCLUDED from the 87A rebate base.
+capital_gains:
+  "111A":            # STCG on listed equity / equity MF (STT paid)
+    rate_pct: 20.0
+    exemption: 0
+  "112A":            # LTCG on listed equity / equity MF
+    rate_pct: 12.5
+    exemption: 125000
+  "112":             # LTCG other assets (property/debt, post-index removal)
+    rate_pct: 12.5
+    exemption: 0

@@ -1,0 +1,61 @@
+# FY 2024-25 / AY 2025-26 tax rules.
+# NOTE: Verify against the current Finance Act before each filing season.
+version: "AY2025-26.v1"
+assessment_year: 2025
+cess_rate_pct: 4.0
+
+regimes:
+  new:
+    standard_deduction: 75000
+    allowed_deductions: ["80CCD2", "std"]
+    slabs:
+      - [0, 300000, 0]
+      - [300000, 700000, 5]
+      - [700000, 1000000, 10]
+      - [1000000, 1200000, 15]
+      - [1200000, 1500000, 20]
+      - [1500000, null, 30]
+    rebate_87a:
+      max_taxable_income: 700000
+      max_rebate: 25000
+      marginal_relief: true
+    surcharge_bands:
+      - [5000000, 10000000, 10]
+      - [10000000, 20000000, 15]
+      - [20000000, null, 25]
+  old:
+    standard_deduction: 50000
+    allowed_deductions:
+      ["80C", "80CCD1B", "80CCD2", "80D", "80E", "80EEA", "24b", "hra_exempt", "std", "80G", "80TTA", "80TTB"]
+    deduction_caps:
+      "80C": 150000
+      "80CCD1B": 50000
+      "80D": 100000
+      "24b": 200000
+      "80TTA": 10000
+      "80TTB": 50000
+    slabs:
+      - [0, 250000, 0]
+      - [250000, 500000, 5]
+      - [500000, 1000000, 20]
+      - [1000000, null, 30]
+    rebate_87a:
+      max_taxable_income: 500000
+      max_rebate: 12500
+      marginal_relief: false
+    surcharge_bands:
+      - [5000000, 10000000, 10]
+      - [10000000, 20000000, 15]
+      - [20000000, 50000000, 25]
+      - [50000000, null, 37]
+
+capital_gains:
+  "111A":
+    rate_pct: 20.0
+    exemption: 0
+  "112A":
+    rate_pct: 12.5
+    exemption: 125000
+  "112":
+    rate_pct: 12.5
+    exemption: 0

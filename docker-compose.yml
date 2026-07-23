@@ -1,0 +1,39 @@
+# Local dev stack (§10 subset). Postgres/Redis/Qdrant are provisioned so the
+# backend can be pointed at them; the MVP defaults to SQLite unless DATABASE_URL
+# is overridden. Managed equivalents (RDS/ElastiCache) replace these in prod.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: taxify
+      POSTGRES_PASSWORD: taxify
+      POSTGRES_DB: taxify
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports: ["6333:6333"]
+    volumes: ["qdrant:/qdrant/storage"]
+
+  backend:
+    build: ./backend
+    environment:
+      ENVIRONMENT: dev
+      DATABASE_URL: postgresql+psycopg://taxify:taxify@db:5432/taxify
+      JWT_SECRET: change-me
+    ports: ["8000:8000"]
+    depends_on: [db, redis, qdrant]
+
+  frontend:
+    build: ./frontend
+    ports: ["5173:80"]
+    depends_on: [backend]
+
+volumes:
+  pgdata:
+  qdrant:

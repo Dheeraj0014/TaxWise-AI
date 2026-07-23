@@ -1,0 +1,20 @@
+{
+  "name": "taxify",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Root task runner. Delegates to frontend (Vite) and backend (FastAPI).",
+  "scripts": {
+    "dev": "concurrently --names \"web,api\" --prefix-colors \"cyan,magenta\" --kill-others-on-fail \"npm:dev:frontend\" \"npm:dev:backend\"",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "cd backend && .venv\\Scripts\\uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "build": "npm run build --prefix frontend",
+    "preview": "npm run preview --prefix frontend",
+    "install:frontend": "npm install --prefix frontend",
+    "install:backend": "pip install -r backend/requirements.txt",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
