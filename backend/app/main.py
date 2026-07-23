@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.routers import (auth, dashboard, finances, optimizer, profile,
                                 recommendations, tax)
 from app.core.config import get_settings
-from app.core.database import init_db
+from app.core.database import run_migrations
 
 DISCLAIMER = (
     "AI Tax Optimizer is an informational tool, not tax or financial advice. "
@@ -20,7 +20,7 @@ DISCLAIMER = (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    run_migrations()
     yield
 
 

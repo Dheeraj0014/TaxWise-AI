@@ -24,7 +24,7 @@ all runnable locally today.
 | §9.2 Frontend | ✅ | Feature-folder SPA: auth gate, dashboard, finances CRUD, strategies, calculator, profile. |
 | §5 Golden-file tests | ✅ | 12 engine + 6 API + 15 finances/dashboard cases — **33 passing**. |
 | §3 Full ERD | 🟡 partial | All financial tables + recommendations. `DOCUMENT`/`EXTRACTED_FIELD` (Phase 3) and `CHAT_*`/`CITATION` (Phase 4) not yet modelled. `ROLE` is denormalised onto `users.role`. |
-| §3 Alembic migrations | ⛔ not yet | Schema is created via `create_all`. See *Schema changes* below. |
+| §3 Alembic migrations | ✅ | Baseline migration for all 10 tables; app boots via `alembic upgrade head`. Tests still use `create_all` (fast, always-fresh). See *Schema changes* below. |
 | §6 Agent · §7 RAG · Docs AI · Celery · IaC | ⛔ scoped out | Ports/contracts stubbed so adapters drop in without domain changes. |
 
 ## Run it locally
@@ -100,13 +100,20 @@ frontend/  React + TS + Tailwind + Vite (§9.2)
 
 ## Schema changes
 
-There are no migrations yet — `init_db()` calls `create_all`, which creates
-**missing tables but never alters an existing one**. If you have an older
-`backend/taxify.db` from before the financial-head tables landed, a new column
-on an existing table (e.g. `income_sources.tds_paid`) will not appear and the
-API will fail with `OperationalError: no such column`. Until Alembic is wired
-up (§3, §11), the fix in dev is to delete `backend/taxify.db` and let it
-regenerate. Do not do this to anything you care about.
+The app runs `alembic upgrade head` on startup (`run_migrations()`), so a new
+column ALTERs onto an existing database instead of being silently skipped. To
+add one: edit the model, then autogenerate and apply the migration —
+
+```bash
+cd backend
+alembic revision --autogenerate -m "add income_sources.tds_paid"
+alembic upgrade head        # or just restart the app
+```
+
+`env.py` takes the URL from the same `Settings` the app uses, and `render_as_batch`
+is on so migrations authored on SQLite still apply on Postgres. The test suite
+bypasses all this and builds the schema with `create_all` — fast and always
+fresh, so no migration state leaks between runs.
 
 ## Next phases (per §13 roadmap)
 Document AI (OCR → LLM extraction), RAG assistant (section-aware chunking + hybrid
