@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import replace
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.v1.deps import get_current_user
@@ -19,6 +19,7 @@ from app.domain.entities.tax import Regime
 from app.domain.services.rate_tables import (RateTableNotFound, available_years)
 from app.domain.services.tax_engine import compare_regimes, compute_tax
 from app.infrastructure.db.models import TaxComputation, User
+from app.infrastructure.pdf import computation_pdf
 
 router = APIRouter(prefix="/tax", tags=["tax"])
 
@@ -126,3 +127,24 @@ def history(user: User = Depends(get_current_user), db: Session = Depends(get_db
         "refund_or_due": float(r.refund_or_due), "rules_version": r.rules_version,
         "computed_at": r.computed_at.isoformat(),
     } for r in rows]
+
+
+@router.get("/computations/{computation_id}/pdf")
+def computation_pdf_download(
+    computation_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Response:
+    """Download a saved computation as a one-page PDF."""
+    row = (db.query(TaxComputation)
+           .filter(TaxComputation.id == computation_id,
+                   TaxComputation.user_id == user.id)
+           .first())
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Computation not found")
+    filename = f"tax-computation-AY{row.assessment_year}-{row.regime}.pdf"
+    return Response(
+        content=computation_pdf(row),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
